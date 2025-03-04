@@ -1,14 +1,25 @@
-import { useState, useContext } from "react";
-import AuthContext from "../context/AuthContext";
+import { useState, useContext, FormEvent, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
+
+// 🔹 Definir estructura del contexto de autenticación
+interface AuthContextType {
+  login: (email: string, password: string) => Promise<void>;
+}
 
 const Login = () => {
+  const auth = useContext(AuthContext) as AuthContextType;
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const { login } = useContext(AuthContext)!;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  if (!auth) {
+    throw new Error("AuthContext es null. Asegúrate de que AuthProvider envuelve la aplicación.");
+  }
+
+  const { login } = auth;
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     await login(email, password);
     navigate("/projects");
@@ -23,14 +34,14 @@ const Login = () => {
           placeholder="Email"
           className="w-full p-2 mb-2 border rounded"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
         />
         <input
           type="password"
           placeholder="Contraseña"
           className="w-full p-2 mb-4 border rounded"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
         />
         <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
           Iniciar Sesión

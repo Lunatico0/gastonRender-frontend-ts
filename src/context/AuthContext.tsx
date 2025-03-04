@@ -1,78 +1,72 @@
 import { createContext, useState, useEffect, ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/api";
-
-console.log("✅ AuthContext.tsx se está ejecutando");
 
 // 🔹 Definir estructura del usuario
 interface User {
   _id: string;
   name: string;
   email: string;
-  token?: string;
+  role: "admin" | "empleado" | "cliente";
+  needsUpdate: boolean;
 }
 
-// 🔹 Estructura del contexto de autenticación
+// 🔹 Definir estructura del contexto de autenticación
 interface AuthContextType {
   user: User | null;
+  setUser: (user: User | null) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
-
-console.log("🔍 AuthContext creado:", AuthContext);
+// 🔹 Crear contexto con valores iniciales
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-
-  console.log("🔍 Estado inicial del usuario:", user);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("🔍 Ejecutando useEffect en AuthContext");
     const token = localStorage.getItem("token");
     if (token) {
       api.get<{ user: User }>("/auth/profile")
-        .then(({ data }) => {
-          setUser(data.user);
-          console.log("✅ Usuario autenticado:", data.user);
-        })
+        .then(({ data }) => setUser(data.user))
         .catch(() => logout());
     }
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
-    console.log("🔍 Iniciando sesión con:", email);
     try {
-      const { data } = await api.post<User>("/auth/login", { email, password });
-      localStorage.setItem("token", data.token!);
-      setUser(data);
-      console.log("✅ Login exitoso:", data);
-    } catch (error) {
-      console.error("❌ Error en login:", error);
+      const { data } = await api.post<{ token: string; user: User }>("/auth/login", { email, password });
+      localStorage.setItem("token", data.token);
+      setUser(data.user);
+
+      navigate(data.user.role === "cliente" && data.user.needsUpdate ? "/complete-profile" : "/profile");
+    } catch (error: any) {
+      console.error("Error en login:", error.response ? error.response.data.message : error.message);
     }
   };
 
   const register = async (name: string, email: string, password: string): Promise<void> => {
-    console.log("🔍 Registrando usuario:", name);
     try {
-      const { data } = await api.post<User>("/auth/register", { name, email, password });
-      localStorage.setItem("token", data.token!);
-      setUser(data);
-      console.log("✅ Registro exitoso:", data);
-    } catch (error) {
-      console.error("❌ Error en registro:", error);
+      const { data } = await api.post<{ token: string; user: User }>("/auth/register", { name, email, password });
+      localStorage.setItem("token", data.token);
+      setUser(data.user);
+      navigate("/profile");
+    } catch (error: any) {
+      console.error("Error en registro:", error);
     }
   };
 
-  const logout = () => {
-    console.log("🔍 Cerrando sesión...");
+  const logout = (): void => {
     localStorage.removeItem("token");
     setUser(null);
+    navigate("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, setUser, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

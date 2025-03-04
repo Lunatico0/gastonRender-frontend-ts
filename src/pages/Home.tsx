@@ -1,9 +1,22 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useContext } from "react";
 import AuthContext from "../context/AuthContext";
 
+// 🔹 Definir estructura del usuario
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: "admin" | "empleado" | "cliente";
+}
+
+// 🔹 Estructura del contexto de autenticación
+interface AuthContextType {
+  user: User | null;
+}
+
 const Home = () => {
-  const { user } = useContext(AuthContext)!;
+  const { user } = useContext(AuthContext) as AuthContextType;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center p-6">
@@ -13,17 +26,17 @@ const Home = () => {
       </p>
 
       {user ? (
-        <Link to="/projects" className="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg">
+        <NavLink to="/projects" className="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg">
           Ver Proyectos
-        </Link>
+        </NavLink>
       ) : (
         <div className="flex gap-4">
-          <Link to="/login" className="bg-green-500 text-white px-6 py-3 rounded-lg text-lg">
+          <NavLink to="/login" className="bg-green-500 text-white px-6 py-3 rounded-lg text-lg">
             Iniciar Sesión
-          </Link>
-          <Link to="/register" className="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg">
+          </NavLink>
+          <NavLink to="/register" className="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg">
             Registrarse
-          </Link>
+          </NavLink>
         </div>
       )}
     </div>

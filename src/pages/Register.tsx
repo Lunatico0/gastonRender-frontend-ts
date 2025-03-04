@@ -1,32 +1,34 @@
-import { useState, useContext } from "react";
-import AuthContext from "../context/AuthContext";
+import { useState, useContext, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 
-console.log("✅ Register.tsx se está ejecutando");
+// 🔹 Tipado para el contexto de autenticación
+interface AuthContextType {
+  register: (name: string, email: string, password: string) => Promise<void>;
+}
 
 const Register = () => {
-  const auth = useContext(AuthContext);
-  if (!auth) {
-    throw new Error("AuthContext es null. Asegúrate de que AuthProvider envuelve la aplicación.");
-  }
-  const { register } = auth;
-
   const navigate = useNavigate();
+  const auth = useContext(AuthContext) as AuthContextType;
 
+  // 🔹 Definimos estados con tipado explícito
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("🔍 Intentando registrar:", { name, email, password });
+  if (!auth) {
+    throw new Error("AuthContext es null. Asegúrate de que AuthProvider envuelve la aplicación.");
+  }
 
+  const { register } = auth;
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     try {
       await register(name, email, password);
-      console.log("✅ Registro exitoso. Redirigiendo a /projects");
       navigate("/projects");
     } catch (error) {
-      console.error("❌ Error en el registro:", error);
+      console.error("Error en el registro:", error);
     }
   };
 
@@ -40,6 +42,7 @@ const Register = () => {
           className="w-full p-2 mb-2 border rounded"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          required
         />
         <input
           type="email"
@@ -47,6 +50,7 @@ const Register = () => {
           className="w-full p-2 mb-2 border rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
         <input
           type="password"
@@ -54,6 +58,7 @@ const Register = () => {
           className="w-full p-2 mb-4 border rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
         <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
           Registrarse

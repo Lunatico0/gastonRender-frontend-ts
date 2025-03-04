@@ -1,16 +1,16 @@
-import axios from "axios";
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
-const API_URL = "http://localhost:3000/api"; // Ajusta si usas otro puerto
+const API_URL: string = "http://localhost:8080/api";
 
-const api = axios.create({
+const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// 🔹 Interceptor para agregar token en cada petición (autenticación)
-api.interceptors.request.use((config) => {
+// 🔹 Interceptor para agregar token en cada petición
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

@@ -1,15 +1,17 @@
 import { AuthProvider } from "./context/AuthContext";
+import { BrowserRouter as Router } from "react-router-dom";
 import AppRouter from "./routes/Router";
 import Navbar from "./components/Navbar";
 
-console.log("✅ App.tsx se está ejecutando");
-
+// 🔹 Componente principal de la aplicación
 const App = () => {
   return (
-    <AuthProvider>  {/* ✅ Asegurar que envuelve todo */}
-      <Navbar />
-      <AppRouter />
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <Navbar />
+        <AppRouter />
+      </AuthProvider>
+    </Router>
   );
 };
 
